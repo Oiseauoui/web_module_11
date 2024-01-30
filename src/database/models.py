@@ -1,6 +1,7 @@
+# database/models.py
 import enum
 from pydantic import validator
-from sqlalchemy import Column, Integer, String, DateTime, func, Date, Enum
+from sqlalchemy import Column, Integer, String, DateTime, func, Date, Enum, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -47,3 +48,4 @@ class User(Base):
     refresh_token = Column(String(255), nullable=True)
     avatar = Column(String(255), nullable=True)
     roles = Column('roles', Enum(Role), default=Role.user)
+    email_verified = Column(Boolean, default=False)

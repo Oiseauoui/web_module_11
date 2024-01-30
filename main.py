@@ -1,18 +1,38 @@
-import time
+# main.py
+import re
+from ipaddress import ip_address
+from typing import Callable
+from pathlib import Path
 
-from fastapi import Request
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import text
+import redis.asyncio as redis
+from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
-from starlette.responses import HTMLResponse
-from starlette.staticfiles import StaticFiles
-from src.database.db import get_db
-from src.routes import contacts, auth
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi_limiter import FastAPILimiter
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.database.db import get_db
+from src.routes import todos, auth, users
+from src.conf.config import config
 
 app = FastAPI()
+banned_ips = [
+    ip_address("192.168.1.1"),
+    ip_address("192.168.1.2"),
+    ip_address("127.0.0.1"),
+]
+origins = ["*"]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.middleware('http')
 async def custom_middleware(request: Request, call_next):
